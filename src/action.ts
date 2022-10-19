@@ -1,4 +1,5 @@
 import { copySync } from 'fs-extra'
+import * as glob from 'glob'
 import { join } from 'path'
 import { dirSync as tmp } from 'tmp'
 
@@ -27,11 +28,19 @@ export async function action(ctx: ActionCtx, options: Options) {
   const tmpDir = tmp().name
   console.log('Tmp dir created: ', tmpDir)
 
-  console.info(`Coping ${options.files.length} files away to tmp dir`)
-  for (const file of options.files) {
-    const fullOutputPath = join(tmpDir, file)
+  const allFiles = options.files.flatMap((filePatternOrFilename) => {
+    return glob.sync(filePatternOrFilename, { cwd: ctx.cwd, absolute: false })
+  })
 
-    copySync(join(ctx.cwd, file), fullOutputPath)
+  console.info(`Coping ${allFiles.length} files away to tmp dir`)
+  for (const filePattern of allFiles) {
+    const fileMatches = glob.sync(filePattern, { cwd: ctx.cwd, absolute: false })
+    console.log(`${filePattern} matched with: ${fileMatches}`)
+
+    for (const match of fileMatches) {
+      const fullOutputPath = join(tmpDir, match)
+      copySync(join(ctx.cwd, match), fullOutputPath)
+    }
   }
 
   await setupGitClient(ctx.exec)
@@ -45,8 +54,8 @@ export async function action(ctx: ActionCtx, options: Options) {
     await newPristineBranch(ctx.exec, options.branchName)
   }
 
-  console.info(`Coping ${options.files.length} files back to the workspace and git adding them`)
-  for (const file of options.files) {
+  console.info(`Coping ${allFiles.length} files back to the workspace and git adding them`)
+  for (const file of allFiles) {
     const fullOutputPath = join(tmpDir, file)
 
     copySync(fullOutputPath, join(ctx.cwd, file), { overwrite: true })
