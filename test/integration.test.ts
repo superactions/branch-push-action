@@ -22,7 +22,7 @@ describe('integration', () => {
 
     await action(
       { cwd: workspacePath, env: {}, exec: filteringExec },
-      { branchName: 'action', files: ['action.yml', 'dist/index.js'] },
+      { branchName: 'action', files: ['action.yml', 'dist/**/*'] },
     )
 
     const distIndexContents = readFileSync(join(workspacePath, 'dist/index.js'), 'utf-8')
@@ -30,12 +30,10 @@ describe('integration', () => {
 
     const status = await git.status()
     // .gitignore should be not tracked on this branch
-    // @todo due to earl back this requires ...
-    expect({ ...status }).toBeAnObjectWith({ created: [], deleted: [], modified: [], not_added: ['.gitignore'] })
+    expect(status).toBeAnObjectWith({ created: [], deleted: [], modified: [], not_added: ['.gitignore'] })
 
     const branchesInfo = await git.branch()
-    // @todo due to earl back this requires ...
-    expect({ ...branchesInfo }).toBeAnObjectWith({ all: ['action', 'master'], current: 'action' })
+    expect(branchesInfo).toBeAnObjectWith({ all: ['action', 'master'], current: 'action' })
 
     const exactOutput = await exec('git diff-tree --no-commit-id --name-status -r HEAD')
     expect(exactOutput).toMatchSnapshot()
