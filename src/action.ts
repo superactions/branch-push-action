@@ -1,7 +1,7 @@
 import { copySync } from 'fs-extra'
+import * as glob from 'glob'
 import { join } from 'path'
 import { dirSync as tmp } from 'tmp'
-import * as glob from 'glob'
 
 import { Exec } from './exec'
 import {

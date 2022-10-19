@@ -12,26 +12,17 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: 12.x
-      - name: Cache YARN dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            node_modules
-            */*/node_modules
-          key: ${{ runner.OS }}-${{ matrix.node }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ runner.OS }}-${{ matrix.node }}-yarn-cache-
-
-      - run: yarn --no-progress --non-interactive --frozen-lockfile
+          node-version: 16.x
+          cache: 'yarn'
+      - run: yarn --frozen-lockfile
 
       - run: yarn build
 
-      - uses: ActionwareIO/branch-push-action@action
+      - uses: superactions/branch-push@action
         with:
           branch: action
           files: |
