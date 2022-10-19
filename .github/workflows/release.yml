@@ -22,7 +22,7 @@ jobs:
 
       - run: yarn build
 
-      - uses: superactions/branch-push@action
+      - uses: superactions/branch-push-action@action
         with:
           branch: action
           files: |
